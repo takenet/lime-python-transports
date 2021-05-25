@@ -15,6 +15,8 @@ pytest-cov = "*"
 isort = "*"
 pytest-asyncio = "*"
 pytest-mock = "*"
+lime-python = "*"
+websocket-client = "*"
 
 [requires]
 python_version = "3.8"

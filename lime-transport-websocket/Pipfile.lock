@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "940328b457c5e68bbf081ed0e8ff4b29fc76347f51df624a14e8f84dae1bd182"
+            "sha256": "721389e20f1b33b40ef3e110dafe1c09cb9e44ccde34c232d5b0ee3b7c343a15"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -265,6 +265,14 @@
             "index": "pypi",
             "version": "==5.8.0"
         },
+        "lime-python": {
+            "hashes": [
+                "sha256:2ebbe90963946e86ee324053713611f2a4b50706815216addc964b3b0ecb8e49",
+                "sha256:e6b59073010d1a84e689ca6fbc7b87d492136f5b2604792d3ace502637aba057"
+            ],
+            "index": "pypi",
+            "version": "==2.0.0"
+        },
         "mccabe": {
             "hashes": [
                 "sha256:ab8a6258860da4b6677da4bd2fe5dc2c659cff31b3ee4f7f5d64e79735b80d42",
@@ -342,6 +350,13 @@
                 "sha256:d66e804411278594d764fc69ec36ec13d9ae9147193a1740cd34d272ca383b8e"
             ],
             "version": "==2.9.0"
+        },
+        "pyhumps": {
+            "hashes": [
+                "sha256:042b4b6eec6c1f862f8310c0eebbae19293e9edab8cafb030ff78c890ef1aa34",
+                "sha256:367b1aadcaa64f8196a3cd14f56559a5602950aeb8486f49318e7394f5e18052"
+            ],
+            "version": "==3.0.2"
         },
         "pyparsing": {
             "hashes": [
@@ -471,6 +486,14 @@
                 "sha256:779383f6086d90c99ae41cf0ff39aac8a7937a9283ce0a414e5dd782f4c94a84"
             ],
             "version": "==3.10.0.0"
+        },
+        "websocket-client": {
+            "hashes": [
+                "sha256:3e2bf58191d4619b161389a95bdce84ce9e0b24eb8107e7e590db682c2d0ca81",
+                "sha256:abf306dc6351dcef07f4d40453037e51cc5d9da2ef60d0fc5d0fe3bcda255372"
+            ],
+            "index": "pypi",
+            "version": "==1.0.1"
         },
         "wemake-python-styleguide": {
             "hashes": [
