@@ -1,8 +1,9 @@
 import json
+from threading import Thread
 from typing import Any, List
 
 from lime_python import SessionCompression, SessionEncryption, Transport
-from websocket import WebsocketApp, enableTrace
+from websocket import WebSocketApp, enableTrace
 
 
 class WebsocketTransport(Transport):
@@ -11,7 +12,7 @@ class WebsocketTransport(Transport):
     def __init__(self, trace_enabled: bool = False) -> None:
         super().__init__(SessionCompression.NONE, SessionEncryption.NONE)
 
-        self.__websocket: WebsocketApp = None
+        self.__websocket: WebSocketApp = None
         enableTrace(trace_enabled)
 
     def open(self, uri: str = None) -> None:  # noqa: D102
@@ -22,14 +23,14 @@ class WebsocketTransport(Transport):
 
         self.compression = SessionCompression.NONE
 
-        self.__websocket = WebsocketApp(
+        self.__websocket = WebSocketApp(
             uri,
-            subprotocols=['lime'],
             on_open=self.on_open,
             on_close=self.on_close,
             on_error=self.on_error,
             on_message=self.__on_envelope
         )
+        self.__run()
 
     def close(self) -> None:  # noqa: D102
         self.__websocket.close()
@@ -52,21 +53,30 @@ class WebsocketTransport(Transport):
     def on_envelope(self, envelope: dict) -> None:  # noqa: D102
         pass
 
-    def on_open(self) -> None:
-        """Handle on websocket open callback."""
+    def on_open(self, ws) -> None:
+        """Handle on websocket open callback."""  # noqa: DAR101
         pass
 
-    def on_close(self) -> None:
-        """Handle on websocket close callback."""
+    def on_close(self, ws, _, __) -> None:  # noqa: WPS123
+        """Handle on websocket close callback."""  # noqa: DAR101
         pass
 
-    def on_error(self, err: Any) -> None:
+    def on_error(self, ws, err: Any) -> None:
         """Handle on websocket error callback.
 
         Args:
             err (Any): the exception
-        """
+        """  # noqa: DAR101
         pass
 
-    def __on_envelope(self, envelope: str) -> None:
+    def __run(self) -> None:
+        serve = self.__websocket.run_forever
+        # Start a thread with the server -- that thread will then start one
+        # more thread for each request
+        server_thread = Thread(target=serve)
+        # Exit the server thread when the main thread terminates
+        server_thread.daemon = True
+        server_thread.start()
+
+    def __on_envelope(self, ws, envelope: str) -> None:
         self.on_envelope(json.loads(envelope))

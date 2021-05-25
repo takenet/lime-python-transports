@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "721389e20f1b33b40ef3e110dafe1c09cb9e44ccde34c232d5b0ee3b7c343a15"
+            "sha256": "8c8f483dbcf0193e583919b1cfb20ac5b424f234b03be57ab33c8c10fcbe5dc3"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -267,11 +267,11 @@
         },
         "lime-python": {
             "hashes": [
-                "sha256:2ebbe90963946e86ee324053713611f2a4b50706815216addc964b3b0ecb8e49",
-                "sha256:e6b59073010d1a84e689ca6fbc7b87d492136f5b2604792d3ace502637aba057"
+                "sha256:48f3b30f4aa08a10dca416229e80ae32064729c780fbf83d4e9b92b485a12721",
+                "sha256:9b833b114686a08ade0a9282accfabc8dbca33b370a5dca2ae96c271803ff6a4"
             ],
             "index": "pypi",
-            "version": "==2.0.0"
+            "version": "==2.0.1"
         },
         "mccabe": {
             "hashes": [
@@ -494,6 +494,13 @@
             ],
             "index": "pypi",
             "version": "==1.0.1"
+        },
+        "websocket-server": {
+            "hashes": [
+                "sha256:91cd4b565d1e1b00ef107abcb2840a8090868b19543f3b38e1962d5f975d0c04"
+            ],
+            "index": "pypi",
+            "version": "==0.4"
         },
         "wemake-python-styleguide": {
             "hashes": [
