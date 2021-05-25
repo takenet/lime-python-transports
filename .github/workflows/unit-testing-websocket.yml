@@ -35,10 +35,12 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
+        cd lime-transport-websocket
         pwd
         flake8 . --count --show-source --statistics
     - name: Test with pytest
       run: |
+        cd lime-transport-websocket
         pwd
         pytest --cache-clear --cov=src . > pytest-coverage.txt
     - name: Pytest Coverage Commentator
