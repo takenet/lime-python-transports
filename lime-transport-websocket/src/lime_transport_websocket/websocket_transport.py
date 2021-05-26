@@ -1,7 +1,8 @@
+from asyncio import Future
+from asyncio.events import get_running_loop
 import json
 from threading import Thread
-from typing import Any, List
-
+from typing import Any, Callable, List
 from lime_python import SessionCompression, SessionEncryption, Transport
 from websocket import WebSocketApp, enableTrace
 
@@ -13,9 +14,18 @@ class WebsocketTransport(Transport):
         super().__init__(SessionCompression.NONE, SessionEncryption.NONE)
 
         self.__websocket: WebSocketApp = None
+        self.__connect_resolve: Callable = None
+        self.__disconnect_resolve: Callable = None
+        self.is_connected = False
         enableTrace(trace_enabled)
 
-    def open(self, uri: str = None) -> None:  # noqa: D102
+    def open_async(self, uri: str = None) -> Future:  # noqa: D102
+        if self.is_connected:
+            raise ValueError('Cannot open an already open connection')
+        loop = get_running_loop()
+        future = loop.create_future()
+        self.__connect_resolve = future.set_result
+
         if uri.startswith('wss://'):
             self.encryption = SessionEncryption.TLS
         else:
@@ -25,17 +35,26 @@ class WebsocketTransport(Transport):
 
         self.__websocket = WebSocketApp(
             uri,
-            on_open=self.on_open,
-            on_close=self.on_close,
+            on_open=self.__on_open,
+            on_close=self.__on_close,
             on_error=self.on_error,
             on_message=self.__on_envelope
         )
         self.__run()
+        return future
 
-    def close(self) -> None:  # noqa: D102
+    def close_async(self) -> Future:  # noqa: D102
+        if not self.is_connected:
+            raise ValueError('Cannot close a non open connection')
+        loop = get_running_loop()
+        future = loop.create_future()
+        self.__disconnect_resolve = future.set_result
         self.__websocket.close()
+        return future
 
     def send(self, envelope: dict) -> None:  # noqa: D102
+        if not self.is_connected:
+            raise ValueError('Cannot send a message while disconnected')
         self.__websocket.send(json.dumps(envelope))
 
     def get_supported_compression(self) -> List[str]:  # noqa: D102
@@ -68,6 +87,16 @@ class WebsocketTransport(Transport):
             err (Any): the exception
         """  # noqa: DAR101
         pass
+
+    def __on_open(self, ws) -> None:
+        self.__connect_resolve(None)
+        self.is_connected = True
+        self.on_open()
+
+    def __on_close(self, ws) -> None:
+        self.__disconnect_resolve(None)
+        self.is_connected = False
+        self.on_close()
 
     def __run(self) -> None:
         serve = self.__websocket.run_forever

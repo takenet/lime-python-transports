@@ -1,6 +1,6 @@
 import threading
 from pytest_mock import MockerFixture
-from pytest import fixture
+from pytest import fixture, mark
 from .helpers import MESSAGES, WebsocketLimeService
 from src import WebsocketTransport
 from time import sleep
@@ -19,14 +19,15 @@ class TestWebsocketTransport:
         server_thread.daemon = True
         server_thread.start()
 
-    def test_open(self, mocker: MockerFixture) -> None:
+    @mark.asyncio
+    async def test_open(self, mocker: MockerFixture) -> None:
         # Arrange
         target = self.get_target()
 
         spy = mocker.spy(target, 'on_open')
 
         # Act
-        target.open('ws://127.0.0.1:8124/')
+        await target.open_async('ws://127.0.0.1:8124/')
         sleep(0.5)
 
         # Assert
@@ -39,9 +40,9 @@ class TestWebsocketTransport:
         spy = mocker.spy(target, 'on_close')
 
         # Act
-        target.open('ws://127.0.0.1:8124/')
+        target.open_async('ws://127.0.0.1:8124/')
         sleep(0.5)
-        target.close()
+        target.close_async()
 
         # Assert
         spy.assert_called_once()
@@ -53,7 +54,7 @@ class TestWebsocketTransport:
         spy_receive = mocker.spy(target, 'on_envelope')
 
         # Act
-        target.open('ws://127.0.0.1:8124/')
+        target.open_async('ws://127.0.0.1:8124/')
         sleep(0.5)
         target.send({'content': 'ping'})
         sleep(0.5)
@@ -70,8 +71,8 @@ class TestWebsocketTransport:
         spy_receive2 = mocker.spy(target2, 'on_envelope')
 
         # Act
-        target1.open('ws://127.0.0.1:8124/')
-        target2.open('ws://127.0.0.1:8124/')
+        target1.open_async('ws://127.0.0.1:8124/')
+        target2.open_async('ws://127.0.0.1:8124/')
         sleep(0.5)
         self.server.broadcast(MESSAGES['pong'])
         sleep(0.5)
