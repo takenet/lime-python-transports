@@ -2,10 +2,10 @@ from asyncio import sleep
 from pytest_mock import MockerFixture
 from pytest import fixture, mark
 from .helpers import MESSAGES, WebsocketLimeService
-from src import WebsocketTransport
+from src import WebSocketTransport
 
 
-class TestWebsocketTransport:
+class TestWebSocketTransport:
 
     @fixture(autouse=True)
     @mark.asyncio
@@ -78,5 +78,5 @@ class TestWebsocketTransport:
         spy_receive1.assert_called_once_with(MESSAGES['pong'])
         spy_receive2.assert_called_once_with(MESSAGES['pong'])
 
-    def get_target(self) -> WebsocketTransport:
-        return WebsocketTransport()
+    def get_target(self) -> WebSocketTransport:
+        return WebSocketTransport()

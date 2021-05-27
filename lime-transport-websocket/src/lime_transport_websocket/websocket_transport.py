@@ -7,7 +7,7 @@ from websockets.client import WebSocketClientProtocol, connect
 from websockets.exceptions import ConnectionClosed
 
 
-class WebsocketTransport(Transport):
+class WebSocketTransport(Transport):
     """WebSocket transport implementation."""
 
     def __init__(self, is_trace_enabled: bool = False) -> None:
