@@ -1,6 +1,8 @@
+from asyncio import wait
 import json
+from typing import Set
 from lime_python import Envelope, SessionState, UriTemplates
-from websocket_server import WebsocketServer
+from websockets.server import serve, WebSocketServer, WebSocketServerProtocol
 from .test_envelopes import COMMANDS, MESSAGES, NOTIFICATIONS, SESSIONS
 
 
@@ -8,37 +10,51 @@ class WebsocketLimeService:
     """Websocket server."""
 
     def __init__(self, port: int) -> None:
-        self.socket = WebsocketServer(port)
-        self.socket.set_fn_message_received(self.on_message)
+        self.port = port
+        self.websocket: WebSocketServer = None
+        self.clients: Set[WebSocketServerProtocol] = set()
 
-    def send_envelope(self, client, envelope: dict) -> None:  # noqa: D102
-        self.socket.send_message(client, json.dumps(envelope))
+    async def open_async(self) -> None:
+        self.websocket = await serve(self.consumer_handler, '127.0.0.1', self.port, subprotocols=['lime'])
 
-    def broadcast(self, envelope: dict) -> None:  # noqa: D102
-        self.socket.send_message_to_all(json.dumps(envelope))
+    async def close_async(self) -> None:
+        self.websocket.close()
+        await self.websocket.wait_closed()
 
-    def on_message(self, client, server, envelope: str) -> None:  # noqa: D102, WPS231, E501
+    async def send_envelope_async(self, client: WebSocketServerProtocol, envelope: dict) -> None:  # noqa: D102
+        await client.send(json.dumps(envelope))
+
+    async def broadcast_async(self, envelope: dict) -> None:  # noqa: D102
+        if self.clients:
+            await wait([self.send_envelope_async(client, envelope) for client in self.clients])
+
+    async def on_message_async(self, client: WebSocketServerProtocol, envelope: str) -> None:  # noqa: D102, WPS231, E501
         envelope: dict = json.loads(envelope)
 
         if Envelope.is_session(envelope):
             if envelope['state'] == SessionState.NEW:
-                self.send_envelope(client, SESSIONS['authenticating'])
+                await self.send_envelope_async(client, SESSIONS['authenticating'])
                 return
             if envelope['state'] == SessionState.AUTHENTICATING:
-                self.send_envelope(client, SESSIONS['established'])
+                await self.send_envelope_async(client, SESSIONS['established'])
                 return
 
         if Envelope.is_command(envelope):
             if envelope['uri'] == UriTemplates.PING:
-                self.send_envelope(client, COMMANDS['ping_response'](envelope))
+                await self.send_envelope_async(client, COMMANDS['ping_response'](envelope))
                 return
 
         if Envelope.is_message(envelope):
             if envelope['content'] == 'ping':
-                self.send_envelope(client, MESSAGES['pong'])
+                await self.send_envelope_async(client, MESSAGES['pong'])
                 return
 
         if Envelope.is_notification(envelope):
             if envelope['event'] == 'ping':
-                self.send_envelope(client, NOTIFICATIONS['pong'])
+                await self.send_envelope_async(client, NOTIFICATIONS['pong'])
                 return
+
+    async def consumer_handler(self, websocket: WebSocketServerProtocol, path: str):
+        self.clients.add(websocket)
+        async for message in websocket:
+            await self.on_message_async(websocket, message)

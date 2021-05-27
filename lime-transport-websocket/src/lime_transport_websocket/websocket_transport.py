@@ -1,30 +1,27 @@
-from asyncio import Future
-from asyncio.events import get_running_loop
 import json
-from threading import Thread
-from typing import Any, Callable, List
+import logging
+from websockets.client import WebSocketClientProtocol, connect
+from websockets.exceptions import ConnectionClosed
+from asyncio import ensure_future
+from typing import Any, List
 from lime_python import SessionCompression, SessionEncryption, Transport
-from websocket import WebSocketApp, enableTrace
 
 
 class WebsocketTransport(Transport):
     """WebSocket transport implementation."""
 
-    def __init__(self, trace_enabled: bool = False) -> None:
+    def __init__(self, is_trace_enabled: bool = False) -> None:
         super().__init__(SessionCompression.NONE, SessionEncryption.NONE)
 
-        self.__websocket: WebSocketApp = None
-        self.__connect_resolve: Callable = None
-        self.__disconnect_resolve: Callable = None
-        self.is_connected = False
-        enableTrace(trace_enabled)
+        self.is_trace_enabled = is_trace_enabled
+        self.logger = logging.getLogger()
+        self.websocket: WebSocketClientProtocol = None
 
-    def open_async(self, uri: str = None) -> Future:  # noqa: D102
-        if self.is_connected:
-            raise ValueError('Cannot open an already open connection')
-        loop = get_running_loop()
-        future = loop.create_future()
-        self.__connect_resolve = future.set_result
+    async def open_async(self, uri: str = None) -> None:  # noqa: D102
+        if self.websocket and self.websocket.open:
+            err = ValueError('Cannot open an already open connection')
+            self.on_error(err)
+            raise err
 
         if uri.startswith('wss://'):
             self.encryption = SessionEncryption.TLS
@@ -33,29 +30,25 @@ class WebsocketTransport(Transport):
 
         self.compression = SessionCompression.NONE
 
-        self.__websocket = WebSocketApp(
-            uri,
-            on_open=self.__on_open,
-            on_close=self.__on_close,
-            on_error=self.on_error,
-            on_message=self.__on_envelope
-        )
-        self.__run()
-        return future
+        self.websocket = await connect(uri, subprotocols=['lime'])
+        self.on_open()
 
-    def close_async(self) -> Future:  # noqa: D102
-        if not self.is_connected:
-            raise ValueError('Cannot close a non open connection')
-        loop = get_running_loop()
-        future = loop.create_future()
-        self.__disconnect_resolve = future.set_result
-        self.__websocket.close()
-        return future
+        ensure_future(self.__message_handler_async())
+
+    async def close_async(self) -> None:  # noqa: D102
+        self.__ensure_is_open()
+
+        await self.websocket.close()
+        self.on_close()
 
     def send(self, envelope: dict) -> None:  # noqa: D102
-        if not self.is_connected:
-            raise ValueError('Cannot send a message while disconnected')
-        self.__websocket.send(json.dumps(envelope))
+        self.__ensure_is_open()
+
+        envelope_str = json.dumps(envelope)
+        if self.is_trace_enabled:
+            self.logger.debug(f'WebSocket SEND: {envelope_str}')
+
+        ensure_future(self.websocket.send(envelope_str))
 
     def get_supported_compression(self) -> List[str]:  # noqa: D102
         return [SessionCompression.NONE]
@@ -72,40 +65,40 @@ class WebsocketTransport(Transport):
     def on_envelope(self, envelope: dict) -> None:  # noqa: D102
         pass
 
-    def on_open(self, ws) -> None:
-        """Handle on websocket open callback."""  # noqa: DAR101
+    def on_open(self) -> None:
+        """Handle on websocket open callback."""
         pass
 
-    def on_close(self, ws, _, __) -> None:  # noqa: WPS123
-        """Handle on websocket close callback."""  # noqa: DAR101
+    def on_close(self) -> None:  # noqa: WPS123
+        """Handle on websocket close callback."""
         pass
 
-    def on_error(self, ws, err: Any) -> None:
+    def on_error(self, err: Any) -> None:
         """Handle on websocket error callback.
 
         Args:
             err (Any): the exception
-        """  # noqa: DAR101
+        """
         pass
 
-    def __on_open(self, ws) -> None:
-        self.__connect_resolve(None)
-        self.is_connected = True
-        self.on_open()
+    def __ensure_is_open(self):
+        if not self.websocket or not self.websocket.open:
+            err = ValueError('The connection is not open')
+            self.on_error(err)
+            raise err
 
-    def __on_close(self, ws) -> None:
-        self.__disconnect_resolve(None)
-        self.is_connected = False
-        self.on_close()
+    async def __message_handler_async(self) -> None:
+        try:
+            while True:
+                message = await self.websocket.recv()
+                self.__on_envelope(message)
+        except ConnectionClosed:
+            if self.is_trace_enabled:
+                self.logger.debug(
+                    'Stopped receiving messages due to closed connection'
+                )
 
-    def __run(self) -> None:
-        serve = self.__websocket.run_forever
-        # Start a thread with the server -- that thread will then start one
-        # more thread for each request
-        server_thread = Thread(target=serve)
-        # Exit the server thread when the main thread terminates
-        server_thread.daemon = True
-        server_thread.start()
-
-    def __on_envelope(self, ws, envelope: str) -> None:
+    def __on_envelope(self, envelope: str) -> None:
+        if self.is_trace_enabled:
+            self.logger.debug(f'WebSocket RECEIVE: {envelope}')
         self.on_envelope(json.loads(envelope))
