@@ -1,10 +1,10 @@
 import json
 import logging
-from websockets.client import WebSocketClientProtocol, connect
-from websockets.exceptions import ConnectionClosed
 from asyncio import ensure_future
 from typing import Any, List
 from lime_python import SessionCompression, SessionEncryption, Transport
+from websockets.client import WebSocketClientProtocol, connect
+from websockets.exceptions import ConnectionClosed
 
 
 class WebsocketTransport(Transport):
@@ -89,7 +89,7 @@ class WebsocketTransport(Transport):
 
     async def __message_handler_async(self) -> None:
         try:
-            while True:
+            while True:  # noqa: WPS457
                 message = await self.websocket.recv()
                 self.__on_envelope(message)
         except ConnectionClosed:

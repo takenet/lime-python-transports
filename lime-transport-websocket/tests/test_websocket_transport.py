@@ -1,4 +1,3 @@
-import threading
 from asyncio import sleep
 from pytest_mock import MockerFixture
 from pytest import fixture, mark
