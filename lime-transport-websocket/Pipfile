@@ -15,10 +15,12 @@ pytest-cov = "*"
 isort = "*"
 pytest-asyncio = "*"
 pytest-mock = "*"
+lime-python = "*"
+websockets = "*"
 
 [requires]
 python_version = "3.8"
 
 [scripts]
-test-cov = "pytest -vvv --cache-clear --cov-report xml:coverage-reports/coverage-lime.xml --cov=src tests/"
+test-cov = "pytest -vvv --cache-clear --cov-report xml:coverage-reports/coverage-websocket.xml --cov=src tests/"
 test-lint = "flake8 . --count --show-source --statistics"
