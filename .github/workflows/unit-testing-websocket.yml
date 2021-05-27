@@ -27,7 +27,6 @@ jobs:
     - name: Install dependencies
       run: |
         cd lime-transport-websocket
-        pwd
         python -m pip install --upgrade pip
         python -m pip install pipenv
         pipenv lock -r > requirements.txt
@@ -36,12 +35,10 @@ jobs:
       run: |
         # stop the build if there are Python syntax errors or undefined names
         cd lime-transport-websocket
-        pwd
         flake8 . --count --show-source --statistics
     - name: Test with pytest
       run: |
         cd lime-transport-websocket
-        pwd
         pytest --cache-clear --cov=src . > pytest-coverage.txt
     - name: Pytest Coverage Commentator
       uses: coroo/pytest-coverage-commentator@v1.0.2
