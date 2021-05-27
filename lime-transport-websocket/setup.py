@@ -11,7 +11,7 @@ setup(
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
-    version='v2.0.0',
+    version='v1.0.0',
     license='MIT',
     description='WebSocket transport class for the LIME protocol',
     author='Gabriel Santos <gabrielr@take.net>, Luis Araújo <luisc@take.net>',
@@ -21,8 +21,12 @@ setup(
         'lime',
         'websocket',
         'ws',
-        'http',
+        'wss',
         'transport'
+    ],
+    install_requires=[
+        'lime-python',
+        'websockets'
     ],
     long_description=long_description,
     long_description_content_type='text/markdown',
