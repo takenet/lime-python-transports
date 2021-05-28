@@ -37,7 +37,7 @@ jobs:
         flake8 lime-transport-websocket --count --show-source --statistics
     - name: Test with pytest
       run: |
-        pytest --cache-clear --cov=src lime-transport-websocket > coverage-reports/websocket-commentator.txt
+        pytest --cache-clear --cov=src lime-transport-websocket > ..coverage-reports/websocket-commentator.txt
     - name: Pytest Coverage Commentator
       uses: coroo/pytest-coverage-commentator@v1.0.2
       with:
