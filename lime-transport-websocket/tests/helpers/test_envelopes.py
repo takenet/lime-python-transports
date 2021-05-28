@@ -1,29 +1,36 @@
-SESSIONS = {
-    'authenticating': {
+from typing import Dict
+
+from lime_python.protocol.command import Command
+
+
+class SESSIONS:
+    authenticating: Dict[str, str] = {
         'id': '0',
         'from': '127.0.0.1:8124',
         'state': 'authenticating'
-    },
-    'established': {
+    }
+    established: Dict[str, str] = {
         'id': '0',
         'from': '127.0.0.1:8124',
         'state': 'established'
     }
-}
 
-MESSAGES = {
-    'pong': {
+
+class MESSAGES:
+    pong: Dict[str, str] = {
         'type': 'text/plain',
         'content': 'pong'
     }
-}
 
-NOTIFICATIONS = {
-    'pong': {
+
+class NOTIFICATIONS:
+    pong: Dict[str, str] = {
         'event': 'pong'
     }
-}
 
-COMMANDS = {
-    'ping_response': lambda envelope: {'id': envelope['id'], 'method': 'get', 'status': 'success'}
-}
+
+class COMMANDS:
+
+    @staticmethod
+    def ping_response(envelope: Command) -> Command:
+        return {'id': envelope.id, 'method': 'get', 'status': 'success'}

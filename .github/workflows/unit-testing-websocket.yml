@@ -34,14 +34,12 @@ jobs:
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
-        cd lime-transport-websocket
-        flake8 . --count --show-source --statistics
+        flake8 lime-transport-websocket --count --show-source --statistics
     - name: Test with pytest
       run: |
-        cd lime-transport-websocket
-        pytest --cache-clear --cov=src . > pytest-coverage.txt
+        pytest --cache-clear --cov=src lime-transport-websocket > coverage-reports/websocket-commentator.txt
     - name: Pytest Coverage Commentator
       uses: coroo/pytest-coverage-commentator@v1.0.2
       with:
-        pytest-coverage: lime-transport-websocket/pytest-coverage.txt
+        pytest-coverage: coverage-reports/websocket-commentator.txt
 

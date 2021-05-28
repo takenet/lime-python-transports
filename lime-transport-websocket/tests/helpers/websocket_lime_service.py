@@ -1,7 +1,8 @@
 import json
 from asyncio import wait
-from typing import Set
-from lime_python import Envelope, SessionState, UriTemplates
+from typing import Awaitable, Set
+
+from lime_python import Command, Envelope, Message, Notification, Session, SessionState  # noqa: E501
 from websockets.server import WebSocketServer, WebSocketServerProtocol, serve
 from .test_envelopes import COMMANDS, MESSAGES, NOTIFICATIONS, SESSIONS
 
@@ -14,7 +15,7 @@ class WebsocketLimeService:
         self.websocket: WebSocketServer = None
         self.clients: Set[WebSocketServerProtocol] = set()
 
-    async def open_async(self) -> None:  # noqa: D102
+    async def open_async(self) -> Awaitable:  # noqa: D102
         self.websocket = await serve(
             self.__consumer_handler,
             '127.0.0.1',
@@ -22,7 +23,7 @@ class WebsocketLimeService:
             subprotocols=['lime']
         )
 
-    async def close_async(self) -> None:  # noqa: D102
+    async def close_async(self) -> Awaitable:  # noqa: D102
         self.websocket.close()
         await self.websocket.wait_closed()
 
@@ -30,10 +31,10 @@ class WebsocketLimeService:
         self,
         client: WebSocketServerProtocol,
         envelope: dict
-    ) -> None:
+    ) -> Awaitable:
         await client.send(json.dumps(envelope))
 
-    async def broadcast_async(self, envelope: dict) -> None:  # noqa: D102
+    async def broadcast_async(self, envelope: dict) -> Awaitable:  # noqa: D102
         if self.clients:
             await wait(
                 [
@@ -46,44 +47,48 @@ class WebsocketLimeService:
         self,
         client: WebSocketServerProtocol,
         envelope: str
-    ) -> None:
+    ) -> Awaitable:
         envelope: dict = json.loads(envelope)
 
         if Envelope.is_session(envelope):
-            if envelope['state'] == SessionState.NEW:
+            session: Session = Session.from_json(envelope)
+            if session.state == SessionState.NEW:
                 await self.send_envelope_async(
                     client,
-                    SESSIONS['authenticating']
+                    SESSIONS.authenticating
                 )
                 return
-            if envelope['state'] == SessionState.AUTHENTICATING:
+            if session.state == SessionState.AUTHENTICATING:
                 await self.send_envelope_async(
                     client,
-                    SESSIONS['established']
+                    SESSIONS.established
                 )
                 return
 
         if Envelope.is_command(envelope):
-            if envelope['uri'] == UriTemplates.PING:
+            command: Command = Command.from_json(envelope)
+            if command.uri == '/ping':
                 await self.send_envelope_async(
                     client,
-                    COMMANDS['ping_response'](envelope)
+                    COMMANDS.ping_response(command)
                 )
                 return
 
         if Envelope.is_message(envelope):
-            if envelope['content'] == 'ping':
+            message: Message = Message.from_json(envelope)
+            if message.content == 'ping':
                 await self.send_envelope_async(
                     client,
-                    MESSAGES['pong']
+                    MESSAGES.pong
                 )
                 return
 
         if Envelope.is_notification(envelope):
-            if envelope['event'] == 'ping':
+            notification: Notification = Notification.from_json(envelope)
+            if notification.event == 'ping':
                 await self.send_envelope_async(
                     client,
-                    NOTIFICATIONS['pong']
+                    NOTIFICATIONS.pong
                 )
                 return
 
@@ -91,7 +96,7 @@ class WebsocketLimeService:
         self,
         websocket: WebSocketServerProtocol,
         path: str
-    ) -> None:
+    ) -> Awaitable:
         self.clients.add(websocket)
         async for message in websocket:
             await self.on_message_async(websocket, message)

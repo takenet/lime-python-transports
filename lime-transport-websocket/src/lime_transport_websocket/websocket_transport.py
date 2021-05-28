@@ -1,7 +1,7 @@
 import json
 import logging
 from asyncio import ensure_future
-from typing import Any, List
+from typing import Any, Awaitable, List
 from lime_python import SessionCompression, SessionEncryption, Transport
 from websockets.client import WebSocketClientProtocol, connect
 from websockets.exceptions import ConnectionClosed
@@ -17,7 +17,7 @@ class WebSocketTransport(Transport):
         self.logger = logging.getLogger()
         self.websocket: WebSocketClientProtocol = None
 
-    async def open_async(self, uri: str = None) -> None:  # noqa: D102
+    async def open_async(self, uri: str = None) -> Awaitable:  # noqa: D102
         if self.websocket and self.websocket.open:
             err = ValueError('Cannot open an already open connection')
             self.on_error(err)
@@ -35,7 +35,7 @@ class WebSocketTransport(Transport):
 
         ensure_future(self.__message_handler_async())
 
-    async def close_async(self) -> None:  # noqa: D102
+    async def close_async(self) -> Awaitable:  # noqa: D102
         self.__ensure_is_open()
 
         await self.websocket.close()
@@ -81,13 +81,13 @@ class WebSocketTransport(Transport):
         """
         pass
 
-    def __ensure_is_open(self):
+    def __ensure_is_open(self) -> None:
         if not self.websocket or not self.websocket.open:
             err = ValueError('The connection is not open')
             self.on_error(err)
             raise err
 
-    async def __message_handler_async(self) -> None:
+    async def __message_handler_async(self) -> Awaitable:
         try:
             while True:  # noqa: WPS457
                 message = await self.websocket.recv()

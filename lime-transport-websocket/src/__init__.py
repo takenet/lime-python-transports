@@ -1,1 +1,1 @@
-from .lime_transport_websocket import *
+from .lime_transport_websocket import WebSocketTransport

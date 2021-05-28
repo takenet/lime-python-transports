@@ -1,8 +1,11 @@
 from asyncio import sleep
-from pytest_mock import MockerFixture
+
 from pytest import fixture, mark
-from .helpers import MESSAGES, WebsocketLimeService
+from pytest_mock import MockerFixture
+
 from src import WebSocketTransport
+
+from .helpers import MESSAGES, WebsocketLimeService
 
 
 class TestWebSocketTransport:
@@ -57,7 +60,7 @@ class TestWebSocketTransport:
         await sleep(0.5)
 
         # Assert
-        spy_receive.assert_called_once_with(MESSAGES['pong'])
+        spy_receive.assert_called_once_with(MESSAGES.pong)
 
     @mark.asyncio
     async def test_receive_broadcast_messages(self, mocker: MockerFixture, server_test: WebsocketLimeService) -> None:
@@ -71,12 +74,12 @@ class TestWebSocketTransport:
         # Act
         await target1.open_async('ws://127.0.0.1:8124/')
         await target2.open_async('ws://127.0.0.1:8124/')
-        await server_test.broadcast_async(MESSAGES['pong'])
+        await server_test.broadcast_async(MESSAGES.pong)
         await sleep(0.5)
 
         # Assert
-        spy_receive1.assert_called_once_with(MESSAGES['pong'])
-        spy_receive2.assert_called_once_with(MESSAGES['pong'])
+        spy_receive1.assert_called_once_with(MESSAGES.pong)
+        spy_receive2.assert_called_once_with(MESSAGES.pong)
 
     def get_target(self) -> WebSocketTransport:
         return WebSocketTransport()
