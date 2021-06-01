@@ -1,6 +1,6 @@
 import json
 from asyncio import wait
-from typing import Awaitable, Set
+from typing import Set
 
 from lime_python import Command, Envelope, Message, Notification, Session, SessionState  # noqa: E501
 from websockets.server import WebSocketServer, WebSocketServerProtocol, serve
@@ -15,7 +15,7 @@ class WebsocketLimeService:
         self.websocket: WebSocketServer = None
         self.clients: Set[WebSocketServerProtocol] = set()
 
-    async def open_async(self) -> Awaitable:  # noqa: D102
+    async def open_async(self) -> None:  # noqa: D102
         self.websocket = await serve(
             self.__consumer_handler,
             '127.0.0.1',
@@ -23,7 +23,7 @@ class WebsocketLimeService:
             subprotocols=['lime']
         )
 
-    async def close_async(self) -> Awaitable:  # noqa: D102
+    async def close_async(self) -> None:  # noqa: D102
         self.websocket.close()
         await self.websocket.wait_closed()
 
@@ -31,10 +31,10 @@ class WebsocketLimeService:
         self,
         client: WebSocketServerProtocol,
         envelope: dict
-    ) -> Awaitable:
+    ) -> None:
         await client.send(json.dumps(envelope))
 
-    async def broadcast_async(self, envelope: dict) -> Awaitable:  # noqa: D102
+    async def broadcast_async(self, envelope: dict) -> None:  # noqa: D102
         if self.clients:
             await wait(
                 [
@@ -47,7 +47,7 @@ class WebsocketLimeService:
         self,
         client: WebSocketServerProtocol,
         envelope: str
-    ) -> Awaitable:
+    ) -> None:
         envelope: dict = json.loads(envelope)
 
         if Envelope.is_session(envelope):
@@ -96,7 +96,7 @@ class WebsocketLimeService:
         self,
         websocket: WebSocketServerProtocol,
         path: str
-    ) -> Awaitable:
+    ) -> None:
         self.clients.add(websocket)
         async for message in websocket:
             await self.on_message_async(websocket, message)
