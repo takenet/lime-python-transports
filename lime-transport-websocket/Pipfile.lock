@@ -58,7 +58,7 @@
                 "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b",
                 "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"
             ],
-            "markers": "platform_system == 'Windows'",
+            "markers": "sys_platform == 'win32'",
             "version": "==0.4.4"
         },
         "coverage": {
@@ -264,11 +264,11 @@
         },
         "lime-python": {
             "hashes": [
-                "sha256:52571c10efd1388520812ae8f7179625750b6d2f82ae115f65bf78063a17a91e",
-                "sha256:775a2eadf7928678003fbe7eef0d79a03aa19766255c15f0db48333bb09844f5"
+                "sha256:6829364b5d2f024514aff9a4b3c652ba1ab7697a8d6b0b052268c60b844fc67c",
+                "sha256:c0d337bca158124e1414fdfeba9dbb1919c3a6ab1c77d8ef06687152c117d8b4"
             ],
             "index": "pypi",
-            "version": "==2.0.6"
+            "version": "==2.0.7"
         },
         "mccabe": {
             "hashes": [
@@ -553,7 +553,7 @@
                 "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b",
                 "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"
             ],
-            "markers": "platform_system == 'Windows'",
+            "markers": "sys_platform == 'win32'",
             "version": "==0.4.4"
         },
         "iniconfig": {
