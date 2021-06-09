@@ -36,8 +36,6 @@ class WebSocketTransport(Transport):
         ensure_future(self.__message_handler_async())
 
     async def close_async(self) -> None:  # noqa: D102
-        self.__ensure_is_open()
-
         await self.websocket.close()
         self.on_close()
 
