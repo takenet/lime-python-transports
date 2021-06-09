@@ -14,7 +14,10 @@ class WebSocketTransport(Transport):
         super().__init__(SessionCompression.NONE, SessionEncryption.NONE)
 
         self.is_trace_enabled = is_trace_enabled
-        self.logger = logging.getLogger()
+        logger = print
+        if logging.root.level <= logging.DEBUG:
+            logger = logging.getLogger()
+        self.logger = logger
         self.websocket: WebSocketClientProtocol = None
 
     async def open_async(self, uri: str = None) -> None:  # noqa: D102
@@ -44,7 +47,7 @@ class WebSocketTransport(Transport):
 
         envelope_str = json.dumps(envelope)
         if self.is_trace_enabled:
-            self.logger.debug(f'WebSocket SEND: {envelope_str}')
+            self.logger(f'WebSocket SEND: {envelope_str}')
 
         ensure_future(self.websocket.send(envelope_str))
 
@@ -92,11 +95,11 @@ class WebSocketTransport(Transport):
                 self.__on_envelope(message)
         except ConnectionClosed:
             if self.is_trace_enabled:
-                self.logger.debug(
+                self.logger(
                     'Stopped receiving messages due to closed connection'
                 )
 
     def __on_envelope(self, envelope: str) -> None:
         if self.is_trace_enabled:
-            self.logger.debug(f'WebSocket RECEIVE: {envelope}')
+            self.logger(f'WebSocket RECEIVE: {envelope}')
         self.on_envelope(json.loads(envelope))
