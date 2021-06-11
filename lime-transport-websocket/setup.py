@@ -11,7 +11,7 @@ setup(
     packages=find_packages('src'),
     package_dir={'': 'src'},
     include_package_data=True,
-    version='v1.0.5',
+    version='v1.0.6',
     license='MIT',
     description='WebSocket transport class for the LIME protocol',
     author='Gabriel Santos <gabrielr@take.net>, Luis Araújo <luisc@take.net>',
