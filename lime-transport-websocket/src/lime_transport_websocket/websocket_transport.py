@@ -1,8 +1,7 @@
 import json
 import logging
-from asyncio import get_event_loop
+from asyncio import ensure_future
 from typing import Any, List
-
 from lime_python import SessionCompression, SessionEncryption, Transport
 from websockets.client import WebSocketClientProtocol, connect
 from websockets.exceptions import ConnectionClosed
@@ -37,7 +36,7 @@ class WebSocketTransport(Transport):
         self.websocket = await connect(uri, subprotocols=['lime'])
         self.on_open()
 
-        self.__run_async_on_sync(self.__message_handler_async)
+        ensure_future(self.__message_handler_async())
 
     async def close_async(self) -> None:  # noqa: D102
         await self.websocket.close()
@@ -50,7 +49,7 @@ class WebSocketTransport(Transport):
         if self.is_trace_enabled:
             self.logger(f'WebSocket SEND: {envelope_str}')
 
-        self.__run_async_on_sync(self.websocket.send, envelope_str)
+        ensure_future(self.websocket.send(envelope_str))
 
     def get_supported_compression(self) -> List[str]:  # noqa: D102
         return [SessionCompression.NONE]
@@ -104,7 +103,3 @@ class WebSocketTransport(Transport):
         if self.is_trace_enabled:
             self.logger(f'WebSocket RECEIVE: {envelope}')
         self.on_envelope(json.loads(envelope))
-
-    def __run_async_on_sync(self, action, *args):
-        loop = get_event_loop()
-        loop.create_task(action(*args))
