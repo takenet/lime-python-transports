@@ -2,6 +2,7 @@ import json
 import logging
 from asyncio import get_event_loop
 from typing import Any, List
+
 from lime_python import SessionCompression, SessionEncryption, Transport
 from websockets.client import WebSocketClientProtocol, connect
 from websockets.exceptions import ConnectionClosed

@@ -2,8 +2,10 @@ import json
 from asyncio import wait
 from typing import Set
 
-from lime_python import Command, Envelope, Message, Notification, Session, SessionState  # noqa: E501
+from lime_python import (Command, Envelope, Message,  # noqa: E501
+                         Notification, Session, SessionState)
 from websockets.server import WebSocketServer, WebSocketServerProtocol, serve
+
 from .test_envelopes import COMMANDS, MESSAGES, NOTIFICATIONS, SESSIONS
 
 
