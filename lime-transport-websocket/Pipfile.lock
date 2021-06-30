@@ -263,11 +263,11 @@
         },
         "lime-python": {
             "hashes": [
-                "sha256:68dd7246431fe4e7b37dbfa29e81bf2988e580e6e6847defd7e6d3bdb7a37f2a",
-                "sha256:903d63e0d14c9774e62639fc753b1fa7ddea0e2168abece7bcbf2a3b35276328"
+                "sha256:50b8e0526de389b28aea85a9881af384f662d432042534f258791fa312906d5d",
+                "sha256:cdb7695f4df9006192f648b94dfdedbfd21bac3788d3c7fe030dde7a8f2e6dd5"
             ],
             "index": "pypi",
-            "version": "==2.0.11"
+            "version": "==2.0.12"
         },
         "mccabe": {
             "hashes": [
